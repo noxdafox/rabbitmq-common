@@ -537,9 +537,10 @@ execute_mnesia_transaction(TxFun) ->
     %% executes on a different node.
     case worker_pool:submit(
            fun () ->
-                   case mnesia:is_transaction() of
+                   case ramnesia:is_transaction() of
                        false -> DiskLogBefore = mnesia_dumper:get_log_writes(),
-                                Res = mnesia:sync_transaction(TxFun),
+                                Res = ramnesia:transaction(TxFun),
+                                io:format("~nTransaction result ~p~n", [Res]),
                                 DiskLogAfter  = mnesia_dumper:get_log_writes(),
                                 case DiskLogAfter == DiskLogBefore of
                                     true  -> file_handle_cache_stats:update(
@@ -549,7 +550,7 @@ execute_mnesia_transaction(TxFun) ->
                                               mnesia_disk_tx),
                                              {sync, Res}
                                 end;
-                       true  -> mnesia:sync_transaction(TxFun)
+                       true  -> ramnesia:transaction(TxFun)
                    end
            end, single) of
         {sync, {atomic,  Result}} -> mnesia_sync:sync(), Result;
@@ -561,7 +562,7 @@ execute_mnesia_transaction(TxFun) ->
 %% Like execute_mnesia_transaction/1 with additional Pre- and Post-
 %% commit function
 execute_mnesia_transaction(TxFun, PrePostCommitFun) ->
-    case mnesia:is_transaction() of
+    case ramnesia:is_transaction() of
         true  -> throw(unexpected_transaction);
         false -> ok
     end,
@@ -575,9 +576,10 @@ execute_mnesia_transaction(TxFun, PrePostCommitFun) ->
 %% Like execute_mnesia_transaction/2, but TxFun is expected to return a
 %% TailFun which gets called (only) immediately after the tx commit
 execute_mnesia_tx_with_tail(TxFun) ->
-    case mnesia:is_transaction() of
+    case ramnesia:is_transaction() of
         true  -> execute_mnesia_transaction(TxFun);
         false -> TailFun = execute_mnesia_transaction(TxFun),
+        io:format("Execute tail fun ~p~n", [TailFun]),
                  TailFun()
     end.
 
