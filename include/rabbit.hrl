@@ -123,29 +123,6 @@
           decorators,
           options = #{}}).    %% transient, recalculated in store/1 (i.e. recovery)
 
--record(amqqueue, {
-          name:: rabbit_amqqueue:name(),                       %% immutable
-          durable:: boolean(),                                 %% immutable
-          auto_delete:: boolean(),                             %% immutable
-          exclusive_owner = none :: rabbit_types:maybe(pid()), %% immutable
-          arguments :: rabbit_framing:amqp_table(),            %% immutable
-          pid :: rabbit_types:maybe(pid()), %% durable (just so we know home
-                                            %% node)
-          slave_pids :: [pid()],       %% transient
-          sync_slave_pids,             %% transient
-          recoverable_slaves,          %% durable
-          policy,                      %% durable, implicit update as above
-          operator_policy,             %% durable, implicit update as above
-          gm_pids,                     %% transient
-          decorators,                  %% transient, recalculated as above
-          state,                       %% durable (have we crashed?)
-          policy_version,
-          slave_pids_pending_shutdown,
-          vhost :: rabbit_types:vhost(), %% secondary index
-          options = #{},
-          type = classic,
-          quorum_nodes }).
-
 -record(exchange_serial, {name, next}).
 
 %% mnesia doesn't like unary records, so we add a dummy 'value' field
